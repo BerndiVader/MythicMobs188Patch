@@ -1,0 +1,4 @@
+name: MythicMobs188
+main: com.gmail.berndivader.mm188patch.Core
+version: 0.1
+depend: [MythicMobs]
