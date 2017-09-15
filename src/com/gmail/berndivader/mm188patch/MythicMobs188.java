@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
@@ -41,7 +40,6 @@ import io.lumine.xikage.mythicmobs.mobs.MobManager;
 import io.lumine.xikage.mythicmobs.mobs.MythicMob;
 import io.lumine.xikage.mythicmobs.skills.SkillString;
 import io.lumine.xikage.mythicmobs.skills.SkillTrigger;
-import io.lumine.xikage.mythicmobs.skills.TriggeredSkill;
 
 public class MythicMobs188 
 implements
@@ -79,20 +77,18 @@ Listener {
 		}
 	}
 
-    @SuppressWarnings("unchecked")
     @EventHandler
     public void onInteractTrigger(PlayerInteractAtEntityEvent e) {
     	if (!e.isCancelled()) {
             Entity t = e.getRightClicked();
             if (!Core.mythicmobs.getMobManager().isActiveMob(t.getUniqueId())) return;
             ActiveMob am = Core.mythicmobs.getMobManager().getMythicMobInstance(BukkitAdapter.adapt(t));
-			TriggeredSkill ts = new TriggeredSkill(SkillTrigger.INTERACT, am, (AbstractEntity)BukkitAdapter.adapt(e.getPlayer()), true, new Pair[0]);
+			AbstractTriggeredSkill ts = new AbstractTriggeredSkill(SkillTrigger.INTERACT, am, (AbstractEntity)BukkitAdapter.adapt(e.getPlayer()), null, true);
             if (ts.getCancelled()) e.setCancelled(true);
             if (!am.getType().getIsInteractable()) e.setCancelled(true);
     	}
     }
     
-    @SuppressWarnings("unchecked")
 	@EventHandler
     public void onDeathTrigger(EntityDeathEvent e) {
         boolean good = true;
@@ -111,7 +107,7 @@ Listener {
                     good = false;
                 }
             }
-            new TriggeredSkill(SkillTrigger.DEATH, am, (AbstractEntity)BukkitAdapter.adapt(killer), new Pair[0]);
+            new AbstractTriggeredSkill(SkillTrigger.DEATH, am, (AbstractEntity)BukkitAdapter.adapt(killer));
             if (mm.preventOtherDrops) {
                 e.getDrops().clear();
                 e.setDroppedExp(0);
@@ -186,6 +182,7 @@ Listener {
             for (ItemStack iS : event.getDrops()) {
                 e.getDrops().add(iS);
             }
+            money=event.getCurrency();
             if (modExp) {
                 e.setDroppedExp(event.getExp());
             }
@@ -207,11 +204,11 @@ Listener {
                     }
                 }
                 if (Core.mythicmobs.getCompatibility().getVault().isPresent() && money > 0.0) {
-                    Core.mythicmobs.getCompatibility().getVault().get().giveMoney(killer, event.getCurrency());
+                    Core.mythicmobs.getCompatibility().getVault().get().giveMoney(killer, money);
                     if (ConfigManager.compatVaultShowMoneyMessage) {
                         message = ConfigManager.compatVaultMoneyMessageFormat;
                         message = SkillString.parseMobVariables(message, am, null, aKiller);
-                        message = message.replace("<drops.money>", String.valueOf(event.getCurrency()));
+                        message = message.replace("<drops.money>", String.valueOf(money));
                         killer.sendMessage(message);
                     }
                 }
