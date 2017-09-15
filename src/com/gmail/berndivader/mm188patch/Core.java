@@ -48,13 +48,11 @@ public class Core extends JavaPlugin {
 	}
 	
 	private void setMCver() {
-	    try
-	    {
-	      String[] split = Bukkit.getServer().getClass().getPackage().getName().substring(23).split("_");
-	      minecraftVersion = Integer.parseInt(split[1]);
-	    } catch (Exception ex) {
-	      minecraftVersion = 11;
+	    try {
+	    	String[] split = Bukkit.getServer().getClass().getPackage().getName().substring(23).split("_");
+	    	minecraftVersion = Integer.parseInt(split[1]);
+	    } catch (final Exception ex) {
+	    	minecraftVersion = 11;
 	    }		
 	}
-
 }

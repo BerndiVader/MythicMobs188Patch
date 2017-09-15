@@ -2,6 +2,7 @@ package com.gmail.berndivader.mm188patch;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -21,8 +23,10 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredListener;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import io.lumine.xikage.mythicmobs.MythicMobs;
@@ -44,7 +48,20 @@ implements
 Listener {
 
 	public MythicMobs188() {
+		Core.logger.info("Register new Events");
 		Core.pluginmanager.registerEvents(this, Core.plugin);
+		Core.logger.info("Try to patch MobEggListener");
+		PlayerInteractEvent.getHandlerList();
+		Iterator<RegisteredListener> it = HandlerList.getRegisteredListeners(Core.mythicmobs).iterator();
+		while (it.hasNext()) {
+			Listener l = it.next().getListener();
+			if (l.getClass().getSimpleName().equals("MobEggListener")) {
+				PlayerInteractEvent.getHandlerList().unregister(l);
+				new MobEggListener188();
+				Core.logger.info("Patched MobEggListenerEvent");
+				break;
+			}
+		}
 	}
 	
 	@EventHandler
@@ -56,7 +73,7 @@ Listener {
 				public void run() {
 					if (Core.mythicmobs.getAPIHelper().isMythicMob(bukkitEntity.getUniqueId())) return;
 					ActiveMob am = Core.mythicmobs.getAPIHelper().getMythicMobInstance(bukkitEntity);
-					Core.mythicmobs.getVolatileCodeHandler().setAttackDamage(bukkitEntity, am.getDamage());
+					if (am!=null) Core.mythicmobs.getVolatileCodeHandler().setAttackDamage(bukkitEntity, am.getDamage());
 				}
 			}.runTaskLater(Core.plugin, 5L);
 		}
